@@ -1,44 +1,50 @@
-<script setup lang="ts">
-  const rangeInputRef = ref<HTMLInputElement | null>(null)
-  const min = ref(1)
-  const max = ref(10)
-  const delta = computed(() => max.value - min.value)
-
-  const labels = computed(() => {
-    return Array.from({ length: delta.value + 1 }, (_, index) => index + min.value)
-  })
-
-  function updateSliderBackground() {
-    if (rangeInputRef.value !== null) {
-      const sliderPosition = ((+rangeInputRef.value.value - min.value) / delta.value) * 100
-      console.log(sliderPosition)
-      rangeInputRef.value.style.background = `linear-gradient(to right, #f50 ${sliderPosition}%, #ccc ${sliderPosition}%)`
-    }
-  }
-  onMounted(() => {
-    updateSliderBackground()
-  })
-</script>
 <template>
-  <div class="range">
-    <input ref="rangeInputRef" @input="updateSliderBackground" class="range-input" type="range" name="rating" step="1"
-      :min="min" :max="max" list="range-values">
-    <ul class="label-wrapper">
-      <li class="range-label" v-for="value in labels" :key="value">{{ value }}</li>
-    </ul>
+  <div class="range"
+    :style="{ '--thumb-radius': thumbRadius + 'px', '--background-width': thumbRadius + sliderPosition + 'px' }">
+    <input v-model="data" ref="rangeInputRef" class="range-input" type="range" name="rating" :min="min" :max="max">
+    <div class="value-indicator" ref="valueIndicatorRef"><span class="value-indicator-span">{{ data }}</span></div>
   </div>
 </template>
+<script setup lang="ts">
+  const valueIndicatorRef = ref<HTMLSpanElement | null>(null)
+  const rangeInputRef = ref<HTMLInputElement | null>(null)
+  const min = ref(0)
+  const max = ref(120)
+  const thumbRadius = ref(16);
+  const data = ref(9)
+  const { width: inputWidth, height: inputHeight } = useElementSize(rangeInputRef)
+  const delta = computed(() => max.value - min.value)
+
+  const sliderPosition = computed(() => {
+    const percentagePosition = (+data.value - min.value) / delta.value;
+    const pixelPosition = inputWidth.value * percentagePosition
+    const centerPosition = inputWidth.value / 2;
+    const percentageDistanceToCenter = (pixelPosition - centerPosition) / centerPosition;
+    const offset = (thumbRadius.value) * percentageDistanceToCenter
+
+    return pixelPosition - thumbRadius.value - offset;
+  })
+  watchSyncEffect(() => {
+    if (valueIndicatorRef.value !== null) {
+      valueIndicatorRef.value.style.left = sliderPosition.value + thumbRadius.value + "px";
+    }
+  })
+</script>
+
+
 <style>
-  :root {
-    --range-height: 15px;
-    --thumb-border-width: 2px;
-    --thumb-diameter: calc(var(--range-height) * 1.75);
-    --thumb-radius: calc(var(--thumb-diameter) / 2);
+  * {
+    box-sizing: border-box;
   }
 
   .range {
+    --thumb-border-width: 2px;
+    --thumb-diameter: calc(var(--thumb-radius)* 2);
+    --range-height: calc(var(--thumb-diameter) / 1.75);
+
     max-width: 50vw;
-    margin: 1rem auto 0.5rem;
+    /* margin: 1rem auto calc(var(--thumb-radius) / 2); */
+    position: relative;
 
     @media (max-width: 520px) {
       max-width: 90vw;
@@ -46,15 +52,15 @@
   }
 
   .range-input {
-    -webkit-appearance: none;
     appearance: none;
     width: 100%;
     cursor: pointer;
     outline: none;
 
-    background: #ccc;
+    background: linear-gradient(to right, #f50 var(--background-width), #ccc var(--background-width));
     height: var(--range-height);
     border-radius: var(--range-height);
+    transition: all 0.2s;
   }
 
   .range-input::-webkit-slider-thumb {
@@ -100,5 +106,22 @@
 
   .range-input:focus::-moz-range-thumb {
     box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
+  }
+
+  .value-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--thumb-diameter);
+    height: var(--thumb-diameter);
+    padding: 2px;
+    border-radius: var(--thumb-diameter);
+
+    position: absolute;
+    top: var(--thumb-diameter);
+    transform: translate(-50%, 0%);
+
+    color: #fff;
+    background-color: #f50;
   }
 </style>
