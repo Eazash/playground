@@ -2,7 +2,7 @@
   <div class="range"
     :style="{ '--thumb-radius': thumbRadius + 'px', '--background-width': thumbRadius + sliderPosition + 'px' }">
     <input v-model="data" ref="rangeInputEl" class="range-input" type="range" name="rating" :min="min" :max="max">
-    <div class="value-indicator" :class="{ 'visible': inputPressed }" ref="valueIndicatorRef"><span
+    <div class="value-indicator" :class="{ 'visible': inputPressed, 'value-indicator-top': indicatorPosition === 'top', 'value-indicator-bottom': indicatorPosition=== 'bottom'}" ref="valueIndicatorRef"><span
         class="value-indicator-span">{{ data }}</span></div>
   </div>
 </template>
@@ -13,6 +13,7 @@
   const max = ref(120)
   const thumbRadius = ref(16);
   const data = ref(9)
+  const indicatorPosition = ref<"bottom"|"top">("top")
   const { width: inputWidth } = useElementSize(rangeInputEl)
   const { pressed: inputPressed } = useMousePressed({target: rangeInputEl.value})
   const delta = computed(() => max.value - min.value)
@@ -45,7 +46,7 @@
     --range-height: calc(var(--thumb-diameter) / 1.75);
 
     max-width: 50vw;
-    margin: 1rem auto calc(var(--thumb-radius) / 2);
+    margin: 2rem auto calc(var(--thumb-radius) / 2);
     padding-block: 6px;
     position: relative;
   }
@@ -116,15 +117,13 @@
   .value-indicator {
     display: inline-flex;
     z-index: -1;
-    align-items: last baseline;
     justify-content: center;
     min-width: var(--thumb-diameter);
-    height: calc(var(--thumb-diameter) * 1.75);
+    height: calc(var(--thumb-diameter) * 1.65);
     padding: calc(var(--thumb-radius) / 4);
     border-radius: var(--thumb-radius);
 
     position: absolute;
-    top: 1px;
     transform: translate(-44%, 0%);
 
     color: #fff;
@@ -136,7 +135,16 @@
 
     visibility: hidden;
     opacity: 0;
-    transition: visibility 0.1s, opacity 0.2s linear;
+    transition: visibility 0.1s, opacity 0.2s linear, position 0.2s linear;
+  }
+
+  .value-indicator-bottom{ 
+    align-items: flex-end;
+    top: 1px;
+  }
+  .value-indicator-top{
+    align-items: flex-start;
+    bottom: 4px;
   }
 
   .visible {
