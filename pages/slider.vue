@@ -1,18 +1,20 @@
 <template>
   <div class="range"
     :style="{ '--thumb-radius': thumbRadius + 'px', '--background-width': thumbRadius + sliderPosition + 'px' }">
-    <input v-model="data" ref="rangeInputRef" class="range-input" type="range" name="rating" :min="min" :max="max">
-    <div class="value-indicator" ref="valueIndicatorRef"><span class="value-indicator-span">{{ data }}</span></div>
+    <input v-model="data" ref="rangeInputEl" class="range-input" type="range" name="rating" :min="min" :max="max">
+    <div class="value-indicator" :class="{ 'visible': inputPressed }" ref="valueIndicatorRef"><span
+        class="value-indicator-span">{{ data }}</span></div>
   </div>
 </template>
 <script setup lang="ts">
   const valueIndicatorRef = ref<HTMLSpanElement | null>(null)
-  const rangeInputRef = ref<HTMLInputElement | null>(null)
+  const rangeInputEl = ref<HTMLInputElement | null>(null)
   const min = ref(0)
   const max = ref(120)
   const thumbRadius = ref(16);
   const data = ref(9)
-  const { width: inputWidth, height: inputHeight } = useElementSize(rangeInputRef)
+  const { width: inputWidth } = useElementSize(rangeInputEl)
+  const { pressed: inputPressed } = useMousePressed({target: rangeInputEl.value})
   const delta = computed(() => max.value - min.value)
 
   const sliderPosition = computed(() => {
@@ -43,10 +45,13 @@
     --range-height: calc(var(--thumb-diameter) / 1.75);
 
     max-width: 50vw;
-    /* margin: 1rem auto calc(var(--thumb-radius) / 2); */
+    margin: 1rem auto calc(var(--thumb-radius) / 2);
+    padding-block: 6px;
     position: relative;
+  }
 
-    @media (max-width: 520px) {
+  @media (max-width: 520px) {
+    .range {
       max-width: 90vw;
     }
   }
@@ -74,16 +79,16 @@
   }
 
   .range-input::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 3) hsla(20, 100%, 50%, 0.25);
+    box-shadow: 0 0 0 2px hsla(20, 100%, 50%, 0.25);
   }
 
-  .range-input:active::-webkit-slider-thumb {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
-  }
+  /* .range-input:active::-webkit-slider-thumb {
+      box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
+    }
 
-  .range-input:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
-  }
+    .range-input:focus::-webkit-slider-thumb {
+      box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
+    } */
 
   .range-input::-moz-range-thumb {
     appearance: none;
@@ -97,31 +102,45 @@
 
 
   .range-input::-moz-range-thumb:hover {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 3) hsla(20, 100%, 50%, 0.25);
+    box-shadow: 0 0 0 2px hsla(20, 100%, 50%, 0.25);
   }
 
-  .range-input:active::-moz-range-thumb {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
-  }
+  /* .range-input:active::-moz-range-thumb {
+      box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
+    }
 
-  .range-input:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
-  }
+    .range-input:focus::-moz-range-thumb {
+      box-shadow: 0 0 0 calc(var(--thumb-radius) / 2) hsla(20, 100%, 50%, 0.5);
+    } */
 
   .value-indicator {
     display: inline-flex;
-    align-items: center;
+    z-index: -1;
+    align-items: last baseline;
     justify-content: center;
     min-width: var(--thumb-diameter);
-    height: var(--thumb-diameter);
-    padding: 2px;
-    border-radius: var(--thumb-diameter);
+    height: calc(var(--thumb-diameter) * 1.75);
+    padding: calc(var(--thumb-radius) / 4);
+    border-radius: var(--thumb-radius);
 
     position: absolute;
-    top: var(--thumb-diameter);
-    transform: translate(-50%, 0%);
+    top: 1px;
+    transform: translate(-44%, 0%);
 
     color: #fff;
     background-color: #f50;
+
+    font-size: var(--thumb-radius);
+    line-height: var(--thumb-radius);
+
+
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0.1s, opacity 0.2s linear;
+  }
+
+  .visible {
+    visibility: visible;
+    opacity: 1;
   }
 </style>
