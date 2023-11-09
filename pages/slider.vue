@@ -79,7 +79,7 @@
     transition: .2s cubic-bezier(0.06, 1.68, 1, 1.38);
   }
 
-  .range-input::-webkit-slider-thumb:hover {
+  .range-input:active::-webkit-slider-thumb {
     box-shadow: 0 0 0 2px hsla(20, 100%, 50%, 0.25);
   }
 
@@ -102,7 +102,7 @@
   }
 
 
-  .range-input::-moz-range-thumb:hover {
+  .range-input:active::-moz-range-thumb:hover {
     box-shadow: 0 0 0 2px hsla(20, 100%, 50%, 0.25);
   }
 
